@@ -1,3 +1,5 @@
+*/ a start macro for importing of several data listings*/
+
 %macro one (a = , b = );
 proc import 
 datafile= "/folders/myfolders/ppp/new/&a"
@@ -6,6 +8,10 @@ dbms=csv replace;
 guessingrows= max;
 run;
 %mend one;
+
+*/ end macro for importing of several data listings*/
+
+*/ begin importing and asign unique output name in the work library*/
 
 %one (a = dm.csv, b = DM);
 %one (a = _ie_.csv, b = IE );
@@ -22,6 +28,8 @@ run;
 %one (a = SUBSTANCE_USE.csv, b = SUBSTANCE );
 %one (a = VITA.csv, b = VITASIGN );
 
+*/ end importing and asign unique output name in the work library*/
+*/ reading and renaming of needed filed OIDs into a more organized listing in the work library*/
 data C01;
 retain Subject ICTYPE ICDT ICROTDT ICCONDT ICOBTAIN;
 set work.CO;
@@ -325,8 +333,9 @@ rename PULSE = Heart_Rate_in_beats_per_min;
 rename RESP = Respiratory_Rate_in_breaths_min; 
 run;
 
+*/ end reading and renaming of needed filed OIDs into a more organized listing in the work library*/
 
-
+*/ begin transposed statement to change table structure*/
 
 PROC TRANSPOSE DATA=DM1 OUT=Demog name= Variables prefix=Patient_Info;
     BY patient_ID;
@@ -353,12 +362,14 @@ PROC TRANSPOSE DATA=_AEIRA_ OUT=AE_INF_ name= Variables prefix=Patient_Info;
            VAR Patient_ID Adverse_Event_Number Signs_and_Symptoms Start_Date Start_Time Start_Time_Unknown End_Date End_time_Unknown;
 
 RUN;
+*/ end transposed statement to change table structure*/
 
-
+*/ begin SAS ODS for creating document */
 ODS rtf 
 FILE = '/folders/myfolders/ppp/profile2.rtf' startpage= no
 style = BarrettsBlue;
 
+*/ begin reporting and printing of new and transposed data listings created */
 
 proc report  data = work.c01;
 where Patient_ID = "US-999-001";
@@ -504,13 +515,8 @@ where Patient_ID = "US-999-001";
 compute before _page_;
  line @3 'Table 20.0: Vital Signs: On Study - Patient Profile'; 
  endcomp;
-
-
-proc SQL;
-select Patient_ID, Variables, Patient_Info1, Patient_Info2, Patient_Info3
-from work.AE_INF_
-where Patient_ID = "US-999-001"
-;
-quit;
+ 
+*/ begin reporting and printing of new and transposed data listings created */
 
 ODS rtf CLOSE;
+*/ end SAS ODS for creating document */
